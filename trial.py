@@ -88,7 +88,7 @@ if number and not number.isnumeric():
 if st.button("🔍 " + t("Analyze")):
     if name and number:
         num = int(number)
-        result = t("even 🔵") if num % 2 == 0 else t("odd 🔺")
+        result = t("an even number") if num % 2 == 0 else t("an odd number")
         result_text = f"{name}, {number} {t('is')} {result}"
 
         st.markdown(f"<h3 style='color:{text_color.lower()}; font-family:{font_family}; font-size:{font_size}px;'>{result_text}</h3>", unsafe_allow_html=True)
