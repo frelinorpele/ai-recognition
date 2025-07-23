@@ -1,5 +1,5 @@
 import streamlit as st
-from googletrans import Translator
+from deep_translator import GoogleTranslator
 from gtts import gTTS
 import os
 import tempfile
@@ -13,18 +13,23 @@ st.set_page_config(page_title="Even-Odd Multilingual Analyzer", layout="centered
 # --- Sidebar UI ---
 st.sidebar.markdown("🎨 **Customize Appearance**")
 
-# Language Selector (moved to sidebar)
-language = st.sidebar.selectbox("🌐 Choose a language", [
-    "English: en", "French: fr", "Spanish: es", "Dutch: de", "Italian: it", "Sweden: sw", "Japanese: ja", "Korean: ko", "Chineese: zh-cn", "Russian: ru", "Arabian: ar", "Portugese: pt"
-])
+# Language Mapping for deep-translator
+language_map = {
+    "English": "en", "French": "fr", "Spanish": "es", "Dutch": "de", "Italian": "it",
+    "Swedish": "sv", "Japanese": "ja", "Korean": "ko", "Chinese": "zh-CN",
+    "Russian": "ru", "Arabic": "ar", "Portuguese": "pt"
+}
 
-# Translator & Translation Helper
-translator = Translator()
+language_display = list(language_map.keys())
+language_choice = st.sidebar.selectbox("🌐 Choose a language", language_display)
+language_code = language_map[language_choice]
+
+# Translation Function
 def t(text):
-    if language == "en":
+    if language_code == "en":
         return text
     try:
-        return translator.translate(text, dest=language).text
+        return GoogleTranslator(source='auto', target=language_code).translate(text)
     except:
         return text
 
@@ -86,20 +91,19 @@ if st.button("🔍 " + t("Analyze")):
         result = t("even 🔵") if num % 2 == 0 else t("odd 🔺")
         result_text = f"{name}, {number} {t('is')} {result}"
 
-        translated = translator.translate(result_text, dest=language).text
-        st.markdown(f"<h3 style='color:{text_color.lower()}; font-family:{font_family}; font-size:{font_size}px;'>{translated}</h3>", unsafe_allow_html=True)
+        st.markdown(f"<h3 style='color:{text_color.lower()}; font-family:{font_family}; font-size:{font_size}px;'>{result_text}</h3>", unsafe_allow_html=True)
 
         # Voice
         if enable_voice:
             try:
-                tts = gTTS(translated, lang=language)
+                tts = gTTS(result_text, lang=language_code)
                 with tempfile.NamedTemporaryFile(delete=False, suffix=".mp3") as fp:
                     tts_path = fp.name
                     tts.save(tts_path)
 
                 with open(tts_path, "rb") as audio_file:
                     st.audio(audio_file.read(), format="audio/mp3")
-                
+
                 os.remove(tts_path)
             except Exception as e:
                 st.error(f"{t('Voice playback failed')}: {e}")
